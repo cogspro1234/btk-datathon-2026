@@ -1,0 +1,41 @@
+# Secrets
+key.txt
+anthropic_key.txt
+*.key
+kaggle.json
+secrets/
+
+# Yarışma verisi & eğitilmiş artifact'ler (paylaşılmaz)
+datathon-2026/
+oof/
+submissions/
+yuklenecek/
+
+# Veri/çıktı uzantıları
+*.zip
+*.csv
+*.npz
+*.npy
+*.pdf
+
+# IDE / araç klasörleri
+.obsidian/
+catboost_info/
+kernels2025/
+lbtmp/
+
+# İç çalışma notları
+PLAN.md
+experiments.md
+SAVUNMA.md
+NOTEBOOK_TASLAK.md
+ai.txt
+info.txt
+*TRANSCRIPT*
+
+# Geçici / yedek
+*.bak
+_*
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
