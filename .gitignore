@@ -1,6 +1,7 @@
 # Secrets
 key.txt
 anthropic_key.txt
+eleven_key.txt
 *.key
 kaggle.json
 secrets/
@@ -17,6 +18,16 @@ yuklenecek/
 *.npz
 *.npy
 *.pdf
+
+# Medya / sunum / ses (paylaşılmaz — yanlışlıkla eklenmesin)
+*.mp3
+*.wav
+*.pptx
+*.ppt
+*.jfif
+*.jpg
+*.jpeg
+*.png
 
 # IDE / araç klasörleri
 .obsidian/

@@ -7,4 +7,3 @@ lightgbm
 xgboost
 catboost
 tabpfn
-anthropic
