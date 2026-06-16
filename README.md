@@ -49,7 +49,7 @@ Yıl-ağırlığı hem skorlamada hem de model eğitiminde `sample_weight` olara
 
 ---
 
-## 3. Pipeline mimarisi (akış)
+## 3. Pipeline mimarisi
 
 ```
 veri (datathon-2026/)
@@ -79,7 +79,7 @@ Tüm base modeller OOF tahminlerini `oof/<isim>_oof.npy` (train) ve `oof/<isim>_
 
 ---
 
-## 4. Final teslim (best-of-2)
+## 4. Final teslim
 
 Kaggle'da iki submission final için işaretlenir. Mimari riskten korunmak için ikisini
 **kasıtlı dekorele** seçtim — biri stacker'a bağımlı, diğeri değil:
@@ -109,7 +109,7 @@ skorda değil, **mimaride** (stacker private'a aşırı uyarsa diye).
 | `nn_et.py` | MLP + ExtraTrees (ensemble çeşitliliği) → `mlp`, `et` |
 | `embed.py` | Sentence-transformer embedding üretir + cache'ler → `oof/emb_train.npy`, `oof/emb_test.npy` |
 
-### Metin kanalı (NLP — çoğu Colab GPU)
+### Metin kanalı (NLP/Colab GPU)
 | Dosya | Rol |
 |---|---|
 | `bert_colab.py` | BERTurk (`dbmdz/bert-base-turkish`) regresörü → `bert_big` |
@@ -150,7 +150,7 @@ skorda değil, **mimaride** (stacker private'a aşırı uyarsa diye).
 
 ---
 
-## 6. Sıfırdan reprodüksiyon (aynı veriyle)
+## 6. Aynı veri seti ile sıfırdan reprodüksiyon
 
 > Önkoşul: Kaggle'dan veriyi indir → `datathon-2026/train.csv`, `datathon-2026/test_x.csv`.
 > GBM ve tablo modelleri lokal CPU'da koşar; metin/TabPFN modelleri Colab GPU ister
@@ -215,21 +215,20 @@ python blend_final.py        # -> sub20 tabanı (NM blend + kalibrasyon)
 
 ---
 
-## 7. Öne çıkanlar (özet)
+## 7. Özet
 
-- **Yıl-ağırlıklı OOF metriği** — public skoru ±0.1 hatayla tahmin etti; bütün kararların
-  dayanağı.
+- **Yıl-ağırlıklı OOF metriği** — bütün kararların dayanağı, public skoru ±0.1 hatayla tahmin etti.
 - **Çok-aileli ensemble** — GBM (LGBM/XGB/CatBoost) + MLP/ExtraTrees + BERTurk + e5 +
   TabPFN, üstüne TabPFN meta-stacker.
-- **LLM-as-judge** — mentor metnini Qwen2.5'e değerlendirici gibi okutup yapılandırılmış
-  skor çıkarma; metin kanalındaki tek gerçek kazanç (v1→v2 ile −1.2 → −2.0 MSE base'de).
+- **LLM-as-judge** — metin kanalındaki tek gerçek kazanç, mentor metnini Qwen2.5'e değerlendirici gibi okutup yapılandırılmış
+  skor çıkarma (v1→v2 ile −1.2 → −2.0 MSE base'de).
 - **Disiplin** — kalibrasyonu neden yaptığımı/yapmadığımı nested ölçümle gösterdim;
   ~25 hipotez denedim, ikisini (Sonnet LLM-judge, agresif ağırlık-fit) public'in
   çürüttüğünü gördüm ve seçmeden önce eledim.
 
 ---
 
-## 8. Bağımlılıklar
+## 8. Dependencies
 
 ```bash
 pip install -r requirements.txt
