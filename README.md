@@ -1,5 +1,7 @@
 # BTK Datathon 2026 — Öğrenci Kariyer Başarısı Tahmini
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Bu repo, BTK Datathon 2026 yarışmasındaki çözümümü içerir. Yarışma, bir öğrencinin
 profil + mentor değerlendirme metninden `career_success_score` değerini 0–100 arası
 **sürekli** bir skor olarak tahmin etmeyi amaçlamaktadır. Yarışmanın başarısını ölçmek için kullanılacak metrik ise **MSE**'dir.
