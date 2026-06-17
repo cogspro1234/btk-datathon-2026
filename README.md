@@ -1,12 +1,13 @@
 # BTK Datathon 2026 — Öğrenci Kariyer Başarısı Tahmini
 
-Bu repo, BTK Datathon 2026 yarışmasındaki çözümümü içerir. Görev: bir öğrencinin
-profil + mentor değerlendirme metninden `career_success_score` değerini (0–100 arası
-**sürekli** bir skor) tahmin etmek. Değerlendirme metriği: **MSE** (ne kadar düşük o
-kadar iyi). Leaderboard %60 public / %40 private; final için 2 submission seçilir.
+Bu repo, BTK Datathon 2026 yarışmasındaki çözümümü içerir. Yarışma, bir öğrencinin
+profil + mentor değerlendirme metninden `career_success_score` değerini 0–100 arası
+**sürekli** bir skor olarak tahmin etmeyi amaçlamaktadır. Yarışmanın başarısını ölçmek için kullanılacak metrik ise **MSE**'dir.
 
-> Ayrıntılı anlatım, EDA grafikleri ve gerekçeler için ana belge:
-> **[`Datathon2026_Cozum.ipynb`](Datathon2026_Cozum.ipynb)** (çıktılarıyla birlikte).
+Ortalama kare sapma (MSE), bir yanda gerçek ya da tahmin edilen değerler ile diğer yanda gözlemlenen değerler ya da bir tahmin edici arasındaki farkların yakından ilişkili ve sıklıkla kullanılan ölçümlerden biridir.
+
+> Ayrıntılı anlatım, EDA grafikleri ve gerekçeler için:
+> **[`Datathon2026_Cozum.ipynb`](Datathon2026_Cozum.ipynb)**.
 
 ---
 
@@ -17,7 +18,7 @@ kadar iyi). Leaderboard %60 public / %40 private; final için 2 submission seçi
 | `train.csv` | 10.000 × 47 | hedef (`career_success_score`) dahil |
 | `test_x.csv` | 10.000 × 46 | hedef hariç |
 
-Sütunlar: kimlik (`student_id`), kategorikler (`department`, `university_tier`,
+Sütunlar: kimlik (`student_id`), kategorik değişkenler (`department`, `university_tier`,
 `target_role`, `hobby`, `preferred_social_media_platform`), 9 teknik skor
 (coding, problem_solving, data_structures, sql, machine_learning, backend, frontend,
 cloud, devops), 4 sosyal skor (communication, teamwork, leadership, presentation),
@@ -25,25 +26,26 @@ cloud, devops), 4 sosyal skor (communication, teamwork, leadership, presentation
 sayısal sinyaller (başvuru/staj/hackathon/github sayıları, yıllar) ve serbest metin
 (`mentor_feedback_text`).
 
-Veri lisans + boyut nedeniyle repoda **yer almaz**; Kaggle yarışma sayfasından
-indirilir ve proje kökünde `datathon-2026/train.csv`, `datathon-2026/test_x.csv`
-olarak konumlanır (scriptlerin beklediği yol).
+Veriyi lisans + boyut nedeniyle repoya koymadım. Kaggle yarışma sayfasından
+indirilip proje kökünde `datathon-2026/train.csv`, `datathon-2026/test_x.csv`
+olarak konumlandırılması gerekmekte.
 
 ---
 
-## 2. Yaklaşımın özü: yıl-ağırlıklı doğrulama
+## 2. Ana yaklaşım / yıl-ağırlıklı doğrulama
 
 İlk modelimde 5-fold CV ile public leaderboard arasında **~11 MSE** fark gördüm. Sebebi
 veride gizli bir dağılım kaymasıydı:
 
 - **Yıl kayması:** test kayıtları son yıllara (2024–2026) eğitim setinden çok daha
   yoğun düşüyor.
-- **Gürültü artışı:** hedefin yıllara göre standart sapması büyüyor (2019 ~12.6 →
-  2025 ~18.3); yani son yıllar hem daha ağırlıklı hem daha zor.
+- **Gürültü artışı:** hedefin yıllara göre standart sapması büyüyor. 2019 yılında std yaklaşık olarak ~12.6 iken
+  2025 yılında ~18.3 değerini görüyoruz. Yani son yıllar hem daha ağırlıklı hem daha zor.
 
-Çözüm: her eğitim satırını **test/train yıl oranıyla** ağırlıklandıran bir OOF (out-of-fold)
-metriği. Bu metrik public skoru **±0.1 hatayla** tahmin etti (örn. 91.12 tahmin /
-91.119 gerçek). Bundan sonra **public LB'ye değil, bu metriğe** güvenerek karar verdim.
+Çözüm olarak her eğitim satırını **test/train yıl oranıyla** ağırlıklandıran bir OOF (out-of-fold)
+metriği oluşturdum. Bu metrik public skoru **±0.1 hatayla** tahmin etti (örn. 91.12 tahmin /
+91.119 gerçek). Bundan sonra **public LB'ye değil, bu metriğe** güvenerek karar verdim. Bu
+sayede submission harcamadan elde ettiğim sonucun yaklaşık değerini hesaplayabildim.
 Yıl-ağırlığı hem skorlamada hem de model eğitiminde `sample_weight` olarak kullanıldı
 (`year_weights`, `train.py`).
 
@@ -79,21 +81,21 @@ Tüm base modeller OOF tahminlerini `oof/<isim>_oof.npy` (train) ve `oof/<isim>_
 
 ---
 
-## 4. Final teslim
+## 4. Final
 
 Kaggle'da iki submission final için işaretlenir. Mimari riskten korunmak için ikisini
 **kasıtlı dekorele** seçtim — biri stacker'a bağımlı, diğeri değil:
 
 - **sub19 — primary** · `tabpfn_stack6_colab.py`
-  Tüm base bileşenleri + 45 ham tablo özelliği + e5-SVD128 + v2 LLM-judge (8 feature)
+  Tüm base bileşenleri + 45 ham tablo özelliği + e5-SVD128 + v2 LLM-judge (Qwen-32B)(8 feature)
   TabPFN'e **stacker girdisi** olarak verir; 3 seed (7/21/101) × 5-fold bagging.
-  Nested (dürüst) OOF: **81.81** → public **82.00**.
+  Nested OOF: **81.81** → public **81.99** / private **82.10**.
 - **sub20 — hedge** · `blend_final.py` çıktısı (·0.75) + `lgbt_llm2` (·0.25)
   Stacker'sız, tam dekorele sigorta. `blend_final.py`: bileşen bag'leri → Nelder-Mead
   ağırlık optimizasyonu (yıl-ağırlıklı) → yıl-bazlı Huber kalibrasyon.
 
 Not: tüm güçlü modeller birbirine ~0.997 korele (gürültü tabanı). Hedge'in değeri
-skorda değil, **mimaride** (stacker private'a aşırı uyarsa diye).
+skorda değil, **mimaride** (stacker'ın private'a aşırı uyarması durumunda).
 
 ---
 
@@ -122,7 +124,7 @@ skorda değil, **mimaride** (stacker private'a aşırı uyarsa diye).
 | `llm_judge2_colab.py` | LLM-as-judge — **Qwen2.5-32B few-shot kalibrasyonlu** (v2, corr ~0.58) → `oof/llm2_train.npy`; `lgbt_llm2`'nin kaynağı |
 | `check_llm2.py` | LLM-judge çıktısının korelasyon/sağlamlık analizi |
 
-### TabPFN ailesi (Colab GPU)
+### TabPFN (Colab GPU)
 | Dosya | Rol |
 |---|---|
 | `tabpfn_colab.py` | TabPFN base → `tabpfn` |
@@ -152,9 +154,9 @@ skorda değil, **mimaride** (stacker private'a aşırı uyarsa diye).
 
 ## 6. Aynı veri seti ile sıfırdan reprodüksiyon
 
-> Önkoşul: Kaggle'dan veriyi indir → `datathon-2026/train.csv`, `datathon-2026/test_x.csv`.
-> GBM ve tablo modelleri lokal CPU'da koşar; metin/TabPFN modelleri Colab GPU ister
-> (kod başlıklarında kurulum notları var). Tüm çıktılar `oof/` altına düşer.
+> Önkoşul: Kaggle'dan veriyi indirmek → `datathon-2026/train.csv`, `datathon-2026/test_x.csv`.
+> GBM ve tablo modellerini lokal CPU'da; metin/TabPFN modelleri Colab GPU'da çalıştırdım.
+> Kod başlıklarında kurulum notları var. Tüm çıktılar `oof/` altına düşer. Colab'daki çıktıların `oof/`'ye manuel indirilmesi gerekir.
 
 ```bash
 pip install -r requirements.txt
